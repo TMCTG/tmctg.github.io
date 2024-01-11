@@ -7,5 +7,4 @@ You need to serve it with a lightweight web server for it to work properly. XAMP
 3. Run mongoose with minimum rights.
 4. Open the webpage in your browser by going to http://localhost:8000/
 
-
-![image](https://github.com/TMCTG/http_web3tx_tool/assets/93534190/5d4283b1-6417-457c-bc61-69924a38759f)
+![image](https://github.com/TMCTG/http_web3tx_tool/assets/93534190/cdf42ac2-dc8b-46a9-9398-9cc0f7a908c9)
