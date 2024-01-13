@@ -6,10 +6,15 @@
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5; }
         .container { max-width: 600px; margin: auto; background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
-        #input-section { border: 1px solid #ccc; padding: 1em; padding-right: 2em; margin-bottom: 20px; }
+        #input-section-wrapper {margin-bottom: 20px; }
+        #input-section { border: 1px solid #ccc; padding: .5em; /*padding-right: 1.5em;*/ margin-bottom: 0;}
         .input-group { margin-bottom: 15px; }
-        .input-label { display: flex; justify-content: space-between; align-items: center;  margin-bottom: 0px; }
-        .input-group input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        .input-group input { margin-bottom: 0px; box-sizing: border-box; width: 100%; }
+        .input-group:last-child { margin-bottom: 5px; }
+        .input-label { display: flex; justify-content: space-between; align-items: center;  margin-bottom: 0; }
+        .input-group input { width: 100%; padding: .5em; border: 1px solid #ccc; border-radius: 4px; }
+        .copy-link-container {text-align: right; margin-top: 0; padding-top: 0; vertical-align: top; }
+        .link-small-text {display: block; font-size: 12px; line-height: 1; }
         button { width: 100%; padding: 10px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
         button:hover { background-color: #45a049; }
         #transactionResult { margin-top: 20px; padding: 10px; border: 1px solid #ddd; }
@@ -22,48 +27,38 @@
 <body>
     <div class="container">
         <div class="top-links">
-            <a target="_self" href="?to=0x55d398326f99059fF775485246999027B3197955&value=0&data=0x095ea7b30000000000000000000000009a93a421b74f1c5755b83dd2c211614dc419c44b00000000000000000000000000000000000000000000000000000000009e28a3&gas=100000&gasPrice=1">Example TX</a>
+            <a target="_self" href="?to=0x55d398326f99059fF775485246999027B3197955&value=0&data=0x095ea7b30000000000000000000000009a93a421b74f1c5755b83dd2c211614dc419c44b00000000000000000000000000000000000000000000000000000000009e28a3">Example TX</a>
             <a target="_self" href="?">[clear all]</a>
         </div>
         <div id="walletAddress" style="padding: 1em">Enter transaction details then 'Connect Wallet' below</div>
-        <div id="input-section">
-            <div class="input-group">
-                <div class="input-label">
-                    <label for="to">To Address:</label>
-                    <span class="small-text">(Recipient address/smart contract)</span>
+        <div id="input-section-wrapper">
+            <div id="input-section">
+                <div class="input-group">
+                    <div class="input-label">
+                        <label for="to">To Address:</label>
+                        <span class="small-text">(Recipient address/smart contract)</span>
+                    </div>
+                    <input type="text" id="to" />
                 </div>
-                <input type="text" id="to" />
+                <div class="input-group">
+                    <div class="input-label">
+                        <label for="value">Value (in wei):</label>
+                        <span class="small-text">(E.g. 1 ETH = 1000000000000000000)</span>
+                    </div>
+                    <input type="text" id="value" />
+                </div>
+                <div class="input-group">
+                    <div class="input-label">
+                        <label for="data">Data:</label>
+                        <span class="small-text">(Must be in 0x... form)</span>
+                    </div>
+                    <input type="text" id="data" />
+                </div>
             </div>
-            <div class="input-group">
-                <div class="input-label">
-                    <label for="value">Value (in wei):</label>
-                    <span class="small-text">(E.g. 1 ETH = 1000000000000000000)</span>
-                </div>
-                <input type="text" id="value" />
-            </div>
-            <div class="input-group">
-                <div class="input-label">
-                    <label for="data">Data:</label>
-                    <span class="small-text">(Must be in 0x... form)</span>
-                </div>
-                <input type="text" id="data" />
-            </div>
-            <div class="input-group">
-                <div class="input-label">
-                    <label for="gasPrice">Gas Price: (leave blank if unsure)</label>
-                    <span class="small-text">(Leave blank if unsure)</span>
-                </div>
-                <input type="text" id="gasPrice" />
-            </div>
-            <div class="input-group">
-                <div class="input-label">
-                    <label for="gas">Gas Override:</label>
-                    <span class="small-text">(Leave blank if unsure)</span>
-                </div>
-                <input type="text" id="gas" />
+            <div class="copy-link-container">
+                <a href="#" class="link-small-text" id="copyLink">[Copy a link to this transaction]</a>
             </div>
         </div>
-
         <button id="connectWallet">Connect Wallet / Build TX</button>
         <div id="txnDetailsDiv" style="display:none;">
             <p>Transaction Payload:</p>
@@ -86,8 +81,8 @@
         to: '',
         value: '',
         data: '',
-        gasPrice: '',
-        gas: '',
+        gasPrice: '0x1',
+        gas: '0x989680',
         nonce: '',
         chainId: '',
     };
@@ -122,8 +117,24 @@
         document.getElementById('to').value = urlParams.get('to') || '0x0123456789abcDEF0123456789abCDef01234567';
         document.getElementById('value').value = urlParams.get('value') || '';
         document.getElementById('data').value = urlParams.get('data') || '';
-        document.getElementById('gasPrice').value = urlParams.get('gasPrice') || '';
-        document.getElementById('gas').value = urlParams.get('gas') || '';
+    });
+
+    document.getElementById('copyLink').addEventListener('click', function(e) {
+        e.preventDefault();
+        const toValue = document.getElementById('to').value;
+        const valueValue = document.getElementById('value').value;
+        const dataValue = document.getElementById('data').value;
+
+        const url = new URL(window.location.href);
+        url.searchParams.set('to', toValue);
+        url.searchParams.set('value', valueValue);
+        url.searchParams.set('data', dataValue);
+
+        navigator.clipboard.writeText(url).then(() => {
+            alert('Link copied to clipboard!');
+        }).catch(err => {
+            console.error('Error copying link:', err);
+        });
     });
 
     // Connect Wallet Button
@@ -148,20 +159,22 @@
                 const valueInput = document.getElementById('value').value;
                 console.log(valueInput)
                 transactionParameters.value = valueInput ? '0x' + (parseInt(valueInput, 10).toString(16)) : '0x0';
-                const gasPriceInput = document.getElementById('gasPrice').value;
-                transactionParameters.gasPrice = gasPriceInput && parseInt(gasPriceInput) ? '0x' + parseInt(gasPriceInput).toString(16) : await window.ethereum.request({ method: 'eth_gasPrice' });
+
+                transactionParameters.gasPrice = await window.ethereum.request({ method: 'eth_gasPrice' });
+                console.log("gasPrice: "+transactionParameters.gasPrice)
                 updateTxnDetailsText(transactionParameters);
                 transactionParameters.nonce = await window.ethereum.request({
                     method: 'eth_getTransactionCount',
                     params: [connectedAccount, 'latest']
                 });
-                const gasInput = document.getElementById('gas').value;
-                transactionParameters.gas = gasInput && parseInt(gasInput) ? '0x' + parseInt(gasInput).toString(16) : await window.ethereum.request({ method: 'eth_estimateGas', params: [transactionParameters] });
+                console.log("nonce: "+JSON.stringify(transactionParameters, bigIntReplacer, 2))
                 const dataInput = document.getElementById('data').value;
                 const dataRegex = /^0x([A-Fa-f0-9]{8}([A-Fa-f0-9]{64})*)?$/;
                 transactionParameters.data = dataRegex.test(dataInput) ? dataInput : '0x';
                 console.log("data: "+transactionParameters.data)
                 updateTxnDetailsText(transactionParameters);
+                transactionParameters.gas = await window.ethereum.request({ method: 'eth_estimateGas', params: [transactionParameters] });
+                console.log("gas: "+transactionParameters.gas)
 
                 document.getElementById('signTransaction').style.display = 'block';
             } catch (error) {
