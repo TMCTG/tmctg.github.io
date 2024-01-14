@@ -195,30 +195,23 @@
                 const chainIdInt = parseInt(transactionParameters.chainId, 16);
                 const { chainName, explorerURL } = await getChainInfo(chainIdInt);
                 document.getElementById('walletAddress').innerText = 'Connected: ' + connectedAccount + ' on ' + chainName + ' (' + chainIdInt + ')';
-                console.log(document.getElementById('to').value)
                 try {
                     transactionParameters.to = Web3.utils.toChecksumAddress(document.getElementById('to').value);
-                    console.log(transactionParameters.to);
                 } catch (error) {console.error('Invalid "to" address:', error);} // Set value, convert to hex if not blank
                 const valueInput = document.getElementById('value').value;
-                console.log(valueInput)
                 transactionParameters.value = valueInput ? '0x' + (parseInt(valueInput, 10).toString(16)) : '0x0';
 
                 transactionParameters.gasPrice = await window.ethereum.request({ method: 'eth_gasPrice' });
-                console.log("gasPrice: "+transactionParameters.gasPrice)
                 updateTxnDetailsText(transactionParameters);
                 transactionParameters.nonce = await window.ethereum.request({
                     method: 'eth_getTransactionCount',
                     params: [connectedAccount, 'latest']
                 });
-                console.log("nonce: "+JSON.stringify(transactionParameters, bigIntReplacer, 2))
                 const dataInput = document.getElementById('data').value;
                 const dataRegex = /^0x[A-Fa-f0-9]*$/; // Looser pattern, just checks for a valid hex string
                 transactionParameters.data = dataRegex.test(dataInput) ? dataInput : '0x';
-                console.log("data: "+transactionParameters.data)
                 updateTxnDetailsText(transactionParameters);
                 transactionParameters.gas = await window.ethereum.request({ method: 'eth_estimateGas', params: [transactionParameters] });
-                console.log("gas: "+transactionParameters.gas)
                 updateTxnDetailsText(transactionParameters);
 
                 document.getElementById('signTransaction').style.display = 'block';
