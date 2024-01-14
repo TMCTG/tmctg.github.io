@@ -28,7 +28,7 @@
 <body>
     <div class="container">
         <div class="top-links">
-            <a target="_self" href="?to=0x55d398326f99059fF775485246999027B3197955&value=0&data=0x095ea7b30000000000000000000000009a93a421b74f1c5755b83dd2c211614dc419c44b00000000000000000000000000000000000000000000000000000000009e28a3">Example TX</a>
+            <a target="_self" href="?to=0x0000000000000000000000000000000000000000&value=0&data=0x4445585420746F20746865206D6F6F6E21&chain=5">Example TX</a>
             <a target="_self" href="?">[clear all]</a>
         </div>
         <div id="walletAddress" style="padding: 1em">Enter transaction details then 'Connect Wallet' below</div>
@@ -55,6 +55,13 @@
                         <span class="small-text">(Must be in 0x... form)</span>
                     </div>
                     <input type="text" id="data" />
+                </div>
+                <div class="input-group">
+                    <div class="input-label">
+                        <label for="chain">Chain #:</label>
+                        <span class="small-text">(Must be an integer, or blank to use your wallet's current selected chain)</span>
+                    </div>
+                    <input type="text" id="chain" />
                 </div>
             </div>
             <div class="copy-link-container">
@@ -113,12 +120,25 @@
             return { chainName: 'Unknown', explorerURL: 'No explorer available' };
         }
     }
+
+    async function switchChain(chainId) {
+    try {
+        await ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: `0x${chainId.toString(16)}` }], // Convert chainId to hexadecimal
+        });
+        } catch (addError) {
+            console.error('Error adding chain:', addError);
+        }
+    }
+
     // Pre-fill url parameters
     document.addEventListener('DOMContentLoaded', () => {
         const urlParams = new URLSearchParams(window.location.search);
         document.getElementById('to').value = urlParams.get('to') || '';
         document.getElementById('value').value = urlParams.get('value') || '';
         document.getElementById('data').value = urlParams.get('data') || '';
+        document.getElementById('chain').value = urlParams.get('chain') || '';
     });
 
     document.getElementById('copyLink').addEventListener('click', function(e) {
@@ -126,11 +146,13 @@
         const toValue = document.getElementById('to').value;
         const valueValue = document.getElementById('value').value;
         const dataValue = document.getElementById('data').value;
+        const chainValue = document.getElementById('chain').value;
 
         const url = new URL(window.location.href);
         url.searchParams.set('to', toValue);
         url.searchParams.set('value', valueValue);
         url.searchParams.set('data', dataValue);
+        url.searchParams.set('chain', dataValue);
 
         navigator.clipboard.writeText(url).then(() => {
             alert('Link copied to clipboard!');
@@ -147,6 +169,26 @@
                 document.getElementById('txnDetailsDiv').style.display = 'block';
                 const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
                 connectedAccount = Web3.utils.toChecksumAddress(accounts[0]);
+
+                // Get the chain that the wallet is currently connected to
+                const browserConnectedChain = await window.ethereum.request({ method: 'eth_chainId' });
+                const chainInput = document.getElementById('chain').value;
+                let inputChainValue;
+                if (chainInput === '') {
+                    inputChainValue = parseInt(browserConnectedChain, 16); // Use the connected wallet's chain ID
+                } else {
+                    inputChainValue = parseInt(chainInput, 10); // Convert input value to integer
+                }
+                if (!isNaN(inputChainValue)) {
+                    const hexChainValue = `0x${inputChainValue.toString(16)}`;
+                    // Compare and switch chains if the chain input is different
+                    if (browserConnectedChain !== hexChainValue) {
+                        switchChain(inputChainValue);
+                    }
+                } else {
+                    console.error("Invalid chain input");
+                }
+
                 transactionParameters.chainId = await window.ethereum.request({ method: 'eth_chainId' });
                 transactionParameters.from = connectedAccount;
                 updateTxnDetailsText(transactionParameters);
@@ -171,12 +213,13 @@
                 });
                 console.log("nonce: "+JSON.stringify(transactionParameters, bigIntReplacer, 2))
                 const dataInput = document.getElementById('data').value;
-                const dataRegex = /^0x([A-Fa-f0-9]{8}([A-Fa-f0-9]{64})*)?$/;
+                const dataRegex = /^0x[A-Fa-f0-9]*$/; // Looser pattern, just checks for a valid hex string
                 transactionParameters.data = dataRegex.test(dataInput) ? dataInput : '0x';
                 console.log("data: "+transactionParameters.data)
                 updateTxnDetailsText(transactionParameters);
                 transactionParameters.gas = await window.ethereum.request({ method: 'eth_estimateGas', params: [transactionParameters] });
                 console.log("gas: "+transactionParameters.gas)
+                updateTxnDetailsText(transactionParameters);
 
                 document.getElementById('signTransaction').style.display = 'block';
             } catch (error) {
