@@ -199,7 +199,7 @@
                     transactionParameters.to = Web3.utils.toChecksumAddress(document.getElementById('to').value);
                 } catch (error) {console.error('Invalid "to" address:', error);} // Set value, convert to hex if not blank
                 const valueInput = document.getElementById('value').value;
-                transactionParameters.value = valueInput ? '0x' + (parseInt(valueInput, 10).toString(16)) : '0x0';
+                transactionParameters.value = valueInput ? '0x' + BigInt(valueInput).toString(16) : '0x0';
 
                 transactionParameters.gasPrice = await window.ethereum.request({ method: 'eth_gasPrice' });
                 updateTxnDetailsText(transactionParameters);
