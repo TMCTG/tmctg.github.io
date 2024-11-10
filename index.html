@@ -224,14 +224,12 @@
                 updateTxnDetailsText(transactionParameters);
                 
                 // Check for gas input, calculate if empty
-                const gasInput = document.getElementById('gas').value;
-                if (gasInput) {
+                const gasValue = document.getElementById('gas').value;
+                if (gasValue) {
                     transactionParameters.gas = Web3.utils.toHex(gasValue);
                 } else {
                     transactionParameters.gas = await window.ethereum.request({ method: 'eth_estimateGas', params: [transactionParameters] });
                 }
-
-                transactionParameters.gas = await window.ethereum.request({ method: 'eth_estimateGas', params: [transactionParameters] });
                 updateTxnDetailsText(transactionParameters);
 
                 document.getElementById('signTransaction').style.display = 'block';
