@@ -59,6 +59,13 @@
                 </div>
                 <div class="input-group">
                     <div class="input-label">
+                        <label for="gas">Gas (optional):</label>
+                        <span class="small-text">(Leave blank to auto-calculate)</span>
+                    </div>
+                    <input type="text" id="gas" />
+                </div>
+                <div class="input-group">
+                    <div class="input-label">
                         <label for="chain">Chain #:</label>
                         <span class="small-text">(Must be an integer, or blank to use your wallet's current selected chain)</span>
                     </div>
@@ -139,6 +146,7 @@
         document.getElementById('to').value = urlParams.get('to') || '';
         document.getElementById('value').value = urlParams.get('value') || '';
         document.getElementById('data').value = urlParams.get('data') || '';
+        document.getElementById('gas').value = urlParams.get('gas') || '';
         document.getElementById('chain').value = urlParams.get('chain') || '';
     });
 
@@ -147,6 +155,7 @@
         const toValue = document.getElementById('to').value;
         const valueValue = document.getElementById('value').value;
         const dataValue = document.getElementById('data').value;
+        const gasValue = document.getElementById('gas').value;
         const chainValue = document.getElementById('chain').value;
 
         const url = new URL(window.location.href);
@@ -212,6 +221,15 @@
                 const dataRegex = /^0x[A-Fa-f0-9]*$/; // Looser pattern, just checks for a valid hex string
                 transactionParameters.data = dataRegex.test(dataInput) ? dataInput : '0x';
                 updateTxnDetailsText(transactionParameters);
+                
+                // Check for gas input, calculate if empty
+                const gasInput = document.getElementById('gas').value;
+                if (gasInput) {
+                    transactionParameters.gas = Web3.utils.toHex(gasValue);
+                } else {
+                    transactionParameters.gas = await window.ethereum.request({ method: 'eth_estimateGas', params: [transactionParameters] });
+                }
+
                 transactionParameters.gas = await window.ethereum.request({ method: 'eth_estimateGas', params: [transactionParameters] });
                 updateTxnDetailsText(transactionParameters);
 
