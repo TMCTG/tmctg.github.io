@@ -162,6 +162,7 @@
         url.searchParams.set('to', toValue);
         url.searchParams.set('value', valueValue);
         url.searchParams.set('data', dataValue);
+        url.searchParams.set('gas', gasValue);
         url.searchParams.set('chain', chainValue);
 
         navigator.clipboard.writeText(url).then(() => {
