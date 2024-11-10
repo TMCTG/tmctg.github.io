@@ -226,7 +226,7 @@
                 // Check for gas input, calculate if empty
                 const gasValue = document.getElementById('gas').value;
                 if (gasValue) {
-                    transactionParameters.gas = Web3.utils.toHex(gasValue);
+                    transactionParameters.gas = Web3.utils.toHex(parseInt(gasValue, 10));
                 } else {
                     transactionParameters.gas = await window.ethereum.request({ method: 'eth_estimateGas', params: [transactionParameters] });
                 }
